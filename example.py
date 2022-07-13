@@ -52,15 +52,15 @@ def get_drive_events(service):
     )
 
 
-def output_drive_events(events):
-    for event, value in events.items():
-        print(f"{event}:{value}")
+def output_drive_events(events, limit=10):
+    for event in events[:limit]:
+        print(event)
 
 
 def main():
     service = authenticate()
     resp = get_drive_events(service)
-    output_drive_events(resp)
+    output_drive_events(resp, 1)
 
 
 if __name__ == "__main__":
