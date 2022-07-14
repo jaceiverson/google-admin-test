@@ -5,6 +5,10 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+import pandas as pd
+from rich import print as rprint
+
+
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/admin.reports.audit.readonly"]
 
@@ -52,15 +56,25 @@ def get_drive_events(service):
     )
 
 
-def output_drive_events(events, limit=10):
-    for event in events[:limit]:
-        print(event)
+def parse_params(data):
+    return pd.Series({x["name"]: x.get("value", x.get("boolValue")) for x in data})
+
+
+def parse_json_response(response):
+    """_summary_: parses the response"""
+    df = pd.json_normalize(response.get("items"), max_level=10)
+    events = pd.json_normalize(pd.json_normalize(df["events"])[0])
+    params = events.parameters.apply(parse_params)
+    events.columns = [f"event.{x}" for x in events.columns]
+    params.columns = [f"parameter.{x}" for x in params.columns]
+
+    return df.join(events).join(params).drop(["events", "event.parameters"], axis=1)
 
 
 def main():
     service = authenticate()
     resp = get_drive_events(service)
-    output_drive_events(resp, 1)
+    df = parse_json_response(resp)
 
 
 if __name__ == "__main__":

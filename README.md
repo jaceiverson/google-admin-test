@@ -23,7 +23,7 @@ Then create OAuth credentials and download the JSON file. Save that JSON file in
 Now we can just run our script to see if it works.
 
 ```
-python3 admin.py
+python3 example.py
 ```
 
 If it worked, you will see a JSON style (dictionary) output in your terminal.
